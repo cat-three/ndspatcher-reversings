@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdint.h>
 
-typedef uint8_t 8
+typedef uint8_t  8
 typedef uint16_t 16
 typedef uint32_t 32
 
