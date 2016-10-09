@@ -33,7 +33,7 @@ typedef uint32_t 32
 void sub_FFC(u32 r0, u32 r1);
 void sub_12D0();
 void sub_13E8(u32 a1, u32 a2); // not implemented
-void sub_189C(); // not implemented
+void sub_189C();
 u32  sub_1D68(u32 a1); // not implemented
 void sub_20A0();
 void sub_52E0(u8 literal, u8* data);
@@ -46,6 +46,7 @@ u32  sub_5AEC(); // not implemented
 u32  sub_7ED4(u32 a1, u32 a2); // not implemented
 void sub_818C(u32 a1, char* a2, u32 a3); // not implemented
 u32  sub_823C(u32 a1, u32 a2, u32 a3); // not implemented
+u32  sub_859C(u8* a1, u8* a2);
 
 int main(int argc, char* argv[], char* envp[])
 {
@@ -173,7 +174,7 @@ void sub_FFC(u32 r0, u32 r1) {
             cmp r0, r1
             blt loop
             @ bx lr
-    }   
+    }
 }
 
 // Called only by main(), assign more variables
@@ -182,8 +183,8 @@ void sub_12D0()
     *(u16*)IME        = 0;
     *(u32*)0x803FFC   = 0x2000AAC;      // assigned only here
     *(u32*)IE         = 3;
-    *(u32*)DISPSTAT   = -1;
-    *(u16*)IF         = 0x18;
+    *(u32*)IF         = -1;
+    *(u16*)DISPSTAT   = 0x18;
     *(u16*)IME        = 1;
 }
 
@@ -191,8 +192,21 @@ void sub_13E8(u32 a1, u32 a2)
 {
 }
 
+// There is a loop of 200 - this perhaps allocates space for the NTR Header
 void sub_189C() 
 { 
+    u32 counter;
+
+    for (index = 0; index < 200; index++) {
+        u32 src = 0x2022A20 + (counter * 0x528);
+
+        if (!sub_859C((u8*)src, (u8*)0x2064ACC) )
+            *(u32*)0x2064AB4 = *(u32*)(src + 0x524);
+        if (!*(u32*)(src))
+            break;
+    }
+
+    return 200;
 }
 
 u32 sub_1D68(u32 a1)
@@ -234,100 +248,6 @@ void sub_52E0(u8 literal, u8* data)
 // Called by many subroutines; is a.k.a. "fileOperations"
 int sub_5320(int *a1, const char* filename, char literal)
 {
-    // v3 = data?;
-    // filename_ = (u8*)filename;
-    // literal_ = literal;
-    // *data? = 0;
-    // v5 = literal & 0x1F;
-    // result = modifyStruct(&filename_, &v19, literal & 0x1E);
-    // if ( result )
-    // return result;
-    // v21 = &v17;
-    // v22 = &v16;
-    // result = messesWithFilename((int)&v18, filename_);
-    // if (!(literal_ & 0x1C))
-    // {
-    //     if ( result )
-    //         return result;
-    //     v8 = v20;
-    //     if ( !v20 || *(u8*)(v20 + 11) & 0x10 )
-    //         return 4;
-    //     if ( !(v5 & 2) || !(*(u8*)(v20 + 11) & 1) )
-    //         goto LABEL_23;
-    //     return 7;
-    // }
-    // if ( !result )
-    // {
-    //     if ( v5 & 4 )
-    //         return 8;
-    //     v8 = v20;
-    //     if ( v20 && !(*(u8*)(v20 + 11) & 0x11) )
-    //     {
-    //         if ( !(v5 & 8) )
-    //             goto LABEL_23;
-    //         v9 = *(u8*)(v20 + 20) | (*(u8*)(v20 + 21) << 8);
-    //         v10 = *(u8*)(v20 + 26) | (*(u8*)(v20 + 27) << 8);
-    //         *(u8*)(v20 + 20) = 0;
-    //         *(u8*)(v8 + 21) = 0;
-    //         *(u8*)(v8 + 26) = 0;
-    //         *(u8*)(v8 + 27) = 0;
-    //         *(u8*)(v8 + 28) = 0;
-    //         *(u8*)(v8 + 29) = 0;
-    //         *(u8*)(v8 + 30) = 0;
-    //         *(u8*)(v8 + 31) = 0;
-    //         *(u8*)(v19 + 4) = 1;
-    //         v11 = *(u32*)(v19 + 44);
-    //         v12 = v10 | (v9 << 16);
-    //         if ( v10 | (v9 << 16) )
-    //         {
-    //             result = sub_3A58(v19, v10 | (v9 << 16));
-    //             if ( result )
-    //                 return result;
-    //             *(u32*)(v19 + 12) = v12 - 1;
-    //         }
-    //         result = utilize_utilizeRetFunctions1(v19, v11);
-    //         if ( !result )
-    //             goto LABEL_17;
-    //         return result;
-    //     }
-    //     return 7;
-    // }
-    // if ( result == 4 )
-    // {
-    //     result = sub_44C0((int)&v18);
-    //     if ( !result )
-    //     {
-    //         v7 = v5 | 8;
-    //         v5 = (v5 | 8) & 0xFF;
-    //         v8 = v20;
-    //         if ( v7 & 8 )
-    //         {
-    //         LABEL_17:
-    //             *(u8*)(v8 + 0xB) = 0;
-    //             &(0x34C630C3) = return0x34C630C3();
-    //             *(u8*)(v8 + 0xE) = &(0x34C630C3);
-    //             *(u8*)(v8 + 0xF) = &(0x34C630C3) << 16 >> 0x18;
-    //             *(u8*)(v8 + 0x10) = &(0x34C630C3) >> 0x10;
-    //             *(u8*)(v8 + 0x11) = BYTE3(&(0x34C630C3));
-    //             *(u8*)(v19 + 4) = 1;
-    //             LOBYTE(v5) = v5 | 0x20;
-    //         }
-    //         LABEL_23:
-    //         v14 = v19;
-    //         v3[7] = *(u32*)(v19 + 44);
-    //         v3[8] = v20;
-    //         *((u8*)v3 + 6) = v5;
-    //         v3[4] = *(u8*)(v8 + 26) | (*(u8*)(v8 + 27) << 8) | ((*(u8*)(v8 + 20) | (*(u8*)(v8 + 21) << 8)) << 16);
-    //         v3[3] = *(u8*)(v8 + 28) | (*(u8*)(v8 + 30) << 16) | (*(u8*)(v8 + 31) << 24) | (*(u8*)(v8 + 29) << 8);
-    //         v3[2] = 0;
-    //         *((u8*)v3 + 7) = -1;
-    //         v3[6] = 0;
-    //         *v3 = v14;
-    //         *((u16*)v3 + 2) = *(u16*)(v14 + 6);
-    //         return 0;
-    //     }
-    // }
-    // return result;
     return 0;
 }
 
@@ -370,5 +290,100 @@ void sub_818C(u32 a1, char* a2, u32 a3)
 
 u32  sub_823C(u32 a1, u32 a2, u32 a3)
 {
+    return 0;
+}
+
+u32  sub_859C(u8* offsetA, u8* offsetB)
+{
+    // Incomplete, requires revision later
+
+    // keep parameters unchanged
+    u8* offsetA_copy = offsetA;
+    u8* offsetB_copy = offsetB;
+
+    if (((u32)offsetA | (u32)offsetB) & 3)
+    {
+        u8 valAtOffsetA = *offsetA;
+        if (valAtOffsetA)
+        {
+            if (*offsetB != valAtOffsetA)
+                return valAtOffsetA - *offsetB;
+            u32 index = 0;
+            while (1)
+            {
+                // comparing the two by the following byte in each
+                valAtOffsetA = *(offsetA + index + 1);
+                offsetB++;
+                if (!valAtOffsetA)
+                    break;
+                if (*offsetB != valAtOffsetA)
+                    return valAtOffsetA - *offsetB;
+                index++:
+            }
+        }
+        return valAtOffsetA - *offsetB;
+    }
+    if (*(u32*)offsetA != *(u32*)offsetB)
+    {        
+        // same code block, label repeat
+        u8 valAtOffsetA = *offsetA;
+        if (valAtOffsetA)
+        {
+            if (*offsetB != valAtOffsetA)
+                return valAtOffsetA - *offsetB;
+            u32 index = 0;
+            while (1)
+            {
+                // comparing the two by the following byte in each
+                valAtOffsetA = *(offsetA + index + 1);
+                offsetB++;
+                if (!valAtOffsetA)
+                    break;
+                if (*offsetB != valAtOffsetA)
+                    return valAtOffsetA - *offsetB;
+                index++:
+            }
+        }
+        return valAtOffsetA - *offsetB;
+    }
+    if (!((*(u32*)offsetA - 0x1010101) & ~*(u32*)offsetA & 0x80808080))
+    {
+        v3 = a2;
+        while (1)
+        {
+            v10 = *((u32*)offsetB + 1);
+            offsetB 4;
+            
+            v11 = ~v10 & (v10 - 0x1010101) & 0x80FFFFFF;
+            v12 = *(u32*)(offsetA + 4);
+            offsetA += 4;
+            v13 = v11 & 0xFF808080;
+            if ( v10 != v12 )
+               break;
+            if ( v13 )
+                return 0;
+        }
+            
+        // same code block, label repeat
+        u8 valAtOffsetA = *offsetA;
+        if (valAtOffsetA)
+        {
+            if (*offsetB != valAtOffsetA)
+                return valAtOffsetA - *offsetB;
+            u32 index = 0;
+            while (1)
+            {
+                // comparing the two by the following byte in each
+                valAtOffsetA = *(offsetA + index + 1);
+                offsetB++;
+                if (!valAtOffsetA)
+                    break;
+                if (*offsetB != valAtOffsetA)
+                    return valAtOffsetA - *offsetB;
+                index++:
+            }
+        }
+        return valAtOffsetA - *offsetB;
+    }
     return 0;
 }
